@@ -1,0 +1,40 @@
+import sqlite3
+
+
+connection = sqlite3.connect("not_telegram.db")
+cursor = connection.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Users(
+id INTEGER PRIMARY KEY,
+username TEXT NOT NULL,
+email TEXT NOT NULL,
+age INTEGER,
+balance INTEGER NOT NULL
+)
+""")
+
+a = 1
+age = 10
+for i in range(10):
+    cursor.execute("INSERT INTO Users (username, email, age, balance) VALUES (?, ?, ?, ?)",
+                   (f"User{a}", f"example{a}@gmail.com", f"{age}", f"{1000}"))
+    a += 1
+    age += 10
+
+a_1 = 1
+for i in range(5):
+    cursor.execute("UPDATE Users SET balance = ? WHERE id = ?", (500, a_1))
+    a_1 += 2
+
+a_2 = 1
+for i in range(4):
+    cursor.execute("DELETE FROM Users WHERE id = ?", (a_2,))
+    a_2 += 3
+
+cursor.execute("SELECT username, email, age, balance FROM Users WHERE age != ?", (60,))
+users = cursor.fetchall()
+for user in users:
+    print("Имя: {} | Почта: {} | Возраст: {} | Баланс: {}".format(*user))
+
+connection.commit()
+connection.close()
