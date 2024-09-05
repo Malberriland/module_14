@@ -1,0 +1,63 @@
+from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher import FSMContext
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+import asyncio
+
+
+api = '7394162589:AAGhNhFIqJJdBA-DHFBOF0scIFQSs2sDut8'
+bot = Bot(token=api)
+dp = Dispatcher(bot, storage=MemoryStorage())
+
+
+kb = ReplyKeyboardMarkup(resize_keyboard=True)
+button1 = KeyboardButton(text='Рассчитать')
+button2 = KeyboardButton(text='Информация')
+button3 = KeyboardButton(text='Купить')
+kb.add(button1)
+kb.add(button2)
+kb.add(button3)
+
+
+kb_2 = InlineKeyboardMarkup()
+inline_button_1 = InlineKeyboardButton('Product1', callback_data="product_buying")
+inline_button_2 = InlineKeyboardButton('Product2', callback_data="product_buying")
+inline_button_3 = InlineKeyboardButton('Product3', callback_data="product_buying")
+inline_button_4 = InlineKeyboardButton('Product4', callback_data="product_buying")
+kb_2.add(inline_button_1)
+kb_2.add(inline_button_2)
+kb_2.add(inline_button_3)
+kb_2.add(inline_button_4)
+
+
+@dp.message_handler(commands=['start'])
+async def start(message):
+    await message.answer('Привет! Я бот помогающий твоему здоровью.', reply_markup=kb)
+
+
+@dp.message_handler(text=['Купить'])
+async def get_buying_list(message):
+    number = 1
+    for i in range(4):
+        await message.answer('Название: Product{} | Описание: описание {} | Цена: {}'.format(number, number, number*100))
+        with open(f'{number}.jpg', "rb") as img:
+            await message.answer_photo(img, 'Продукт 1')
+        number += 1
+    await message.answer('Выберите продукт для покупки:', reply_markup=kb_2)
+
+
+@dp.callback_query_handler(text='product_buying')
+async def send_confirm_message(call):
+    await call.message.answer('Вы успешно приобрели продукт!')
+    await call.answer()
+
+
+@dp.message_handler()
+async def all_massages(message):
+    await message.answer('Введите команду /start, чтобы начать общение.')
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
